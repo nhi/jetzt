@@ -1,16 +1,16 @@
 // Require next from the folder we're running in
 // @ts-ignore
-const nextBuild = require.main.require("next/dist/build").default;
+const nextBuild = require.main.require("next/dist/build").default
 
-const archiver = require("archiver");
-import fse, { createWriteStream } from "fs-extra";
-import { join } from "path";
-import { JetztConfig } from "./config";
-import { log, LogLevel } from "./lib/log";
-import { runStep } from "./lib/step";
-import { NextBuild } from "./next";
-import { parseNextJsConfig } from "./parseNextConfig";
-import { functionJson, handler, hostJson, proxiesJson } from "./templates";
+const archiver = require("archiver")
+import fse, { createWriteStream } from "fs-extra"
+import { join } from "path"
+import { JetztConfig } from "./config"
+import { log, LogLevel } from "./lib/log"
+import { runStep } from "./lib/step"
+import { NextBuild } from "./next"
+import { parseNextJsConfig } from "./parseNextConfig"
+import { functionJson, handler, hostJson, proxiesJson } from "./templates"
 
 export async function build(config: JetztConfig) {
   const {
@@ -18,36 +18,36 @@ export async function build(config: JetztConfig) {
     buildOutputPath,
     buildPagesOutputPath,
     buildAssetsOutputPath
-  } = config;
+  } = config
 
-  const nextConfig = await runStep(`Parsing Next.js config...`, () =>
+  const nextConfig = await runStep("Parsing Next.js config...", () =>
     parseNextJsConfig(sourcePath)
-  );
+  )
 
   //
   // Build
   //
-  const buildResult = await runStep(`Building Next.js project...`, () =>
+  const buildResult = await runStep("Building Next.js project...", () =>
     buildNextProject(sourcePath, buildPagesOutputPath, nextConfig)
-  );
+  )
 
   // Process build result
-  await runStep(`Processing SSR pages...`, () => processSSRPages(buildResult));
+  await runStep("Processing SSR pages...", () => processSSRPages(buildResult))
 
-  await runStep(`Generating proxy configuration...`, () =>
+  await runStep("Generating proxy configuration...", () =>
     generateProxies(buildResult, buildPagesOutputPath, config)
-  );
-  await runStep(`Generating host configuration...`, () =>
+  )
+  await runStep("Generating host configuration...", () =>
     generateHostConfig(buildPagesOutputPath)
-  );
+  )
 
-  await runStep(`Copying static assets`, () =>
+  await runStep("Copying static assets", () =>
     copyStaticAssets(sourcePath, buildAssetsOutputPath, buildResult)
-  );
+  )
 
-  await runStep(`Building Azure functions package`, () =>
+  await runStep("Building Azure functions package", () =>
     createPackage(buildPagesOutputPath, buildOutputPath)
-  );
+  )
 }
 
 async function buildNextProject(
@@ -55,12 +55,12 @@ async function buildNextProject(
   buildPagesOutputPath: string,
   nextConfig: unknown
 ) {
-  await nextBuild(sourcePath, nextConfig);
+  await nextBuild(sourcePath, nextConfig)
 
-  const buildOutput = new NextBuild(sourcePath);
-  await buildOutput.init(buildPagesOutputPath);
+  const buildOutput = new NextBuild(sourcePath)
+  await buildOutput.init(buildPagesOutputPath)
 
-  return buildOutput;
+  return buildOutput
 }
 
 async function processSSRPages(buildResult: NextBuild) {
@@ -68,34 +68,34 @@ async function processSSRPages(buildResult: NextBuild) {
   for (const page of buildResult.pages.filter(
     p => !p.isStatic && !p.isSpecial
   )) {
-    log(`Processing ${page.pageName}`, LogLevel.Verbose);
+    log(`Processing ${page.pageName}`, LogLevel.Verbose)
 
     // Copying to new folder
-    log(`Copying to new file ${page.targetPath}`, LogLevel.Verbose);
-    await fse.copy(page.pageSourcePath, page.targetPath);
+    log(`Copying to new file ${page.targetPath}`, LogLevel.Verbose)
+    await fse.copy(page.pageSourcePath, page.targetPath)
 
     // Wrapping with handler
     log(
       `Writing new handler wrapping ${page.targetPageFileName}...`,
       LogLevel.Verbose
-    );
+    )
     await fse.writeFile(
       join(page.targetFolder, "index.js"),
       handler(page.targetPageFileName),
       {
         encoding: "utf-8"
       }
-    );
+    )
 
     // Adding function declaration
-    log(`Writing function description...`, LogLevel.Verbose);
+    log("Writing function description...", LogLevel.Verbose)
     await fse.writeFile(
       join(page.targetFolder, "function.json"),
       functionJson(page),
       {
         encoding: "utf-8"
       }
-    );
+    )
   }
 }
 
@@ -111,14 +111,14 @@ async function generateProxies(
     {
       encoding: "utf-8"
     }
-  );
+  )
 }
 
 async function generateHostConfig(buildPath: string): Promise<void> {
   // Generate host config
   await fse.writeFile(join(buildPath, "host.json"), hostJson(), {
     encoding: "utf-8"
-  });
+  })
 }
 
 async function copyStaticAssets(
@@ -126,47 +126,47 @@ async function copyStaticAssets(
   buildAssetOutputPath: string,
   buildResult: NextBuild
 ) {
-  log(`Copying runtime JS...`, LogLevel.Verbose);
+  log("Copying runtime JS...", LogLevel.Verbose)
   await fse.copy(
     join(sourcePath, ".next/static"),
     join(buildAssetOutputPath, "static")
-  );
+  )
 
-  log(`Copying static pages...`, LogLevel.Verbose);
+  log("Copying static pages...", LogLevel.Verbose)
   for (const staticPage of buildResult.pages.filter(p => p.isStatic)) {
     await fse.copy(
       staticPage.pageSourcePath,
       join(buildAssetOutputPath, "pages", staticPage.targetPageFileName)
-    );
+    )
   }
 }
 
 async function createPackage(sourcePath: string, outputPath: string) {
-  const packageFilename = "package.zip";
+  const packageFilename = "package.zip"
 
   await new Promise((resolve, reject) => {
-    const output = createWriteStream(join(outputPath, packageFilename));
-    output.on("finish", resolve);
-    output.on("error", reject);
+    const output = createWriteStream(join(outputPath, packageFilename))
+    output.on("finish", resolve)
+    output.on("error", reject)
 
     const archive = archiver("zip", {
       zlib: { level: 0 }
-    });
+    })
 
     archive
-      .glob(`**/*`, {
+      .glob("**/*", {
         ignore: packageFilename,
         cwd: sourcePath
       })
       .on("error", reject)
-      .pipe(output);
-    archive.finalize();
-  });
+      .pipe(output)
+    archive.finalize()
+  })
 
   await fse.writeFile(join(outputPath, "packagename.txt"), packageFilename, {
     encoding: "utf-8"
-  });
+  })
 
   // Clean up directories
-  await fse.remove(sourcePath);
+  await fse.remove(sourcePath)
 }

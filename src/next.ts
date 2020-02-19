@@ -1,6 +1,6 @@
 import glob = require("tiny-glob");
-import { basename, sep, join, dirname, extname } from "path";
-import { log, LogLevel } from "./lib/log";
+import { basename, sep, join, dirname, extname } from "path"
+import { log, LogLevel } from "./lib/log"
 
 /**
  * Represents a single Next.js page
@@ -23,21 +23,21 @@ export class NextPage {
    * Indicates whether the page was statically pre-rendered
    */
   get isStatic(): boolean {
-    return this.path.endsWith(".html");
+    return this.path.endsWith(".html")
   }
 
   /**
    * Indicates whether the page uses dynamic routing
    */
   get isDynamicallyRouted(): boolean {
-    return /\[(.+)\]/.test(this.route);
+    return /\[(.+)\]/.test(this.route)
   }
 
   /**
    * Indicates whether the page is a special page, e.g., the error page
    */
   get isSpecial(): boolean {
-    return this.pageFileName.startsWith("_");
+    return this.pageFileName.startsWith("_")
   }
 
   get route(): string {
@@ -45,24 +45,24 @@ export class NextPage {
       .split(sep)
       .slice(1) // Skip `pages`
       .map(x => {
-        const segment = basename(x, extname(x));
+        const segment = basename(x, extname(x))
         if (segment === "index") {
-          return "";
+          return ""
         }
 
-        return segment;
+        return segment
       })
-      .join("/");
+      .join("/")
   }
 
   get processedRoute(): string {
-    const r = this.route.replace(/\[(.+?)\]/g, "{$1}");
+    const r = this.route.replace(/\[(.+?)\]/g, "{$1}")
     if (!r) {
       // Workaround for /index route
-      return "/";
+      return "/"
     }
 
-    return r;
+    return r
   }
 
   /**
@@ -75,15 +75,15 @@ export class NextPage {
     return basename(this.path, extname(this.path)).replace(
       /\[(.+?)\]/g,
       "_$1_"
-    );
+    )
   }
 
   get pageFileName(): string {
-    return basename(this.path);
+    return basename(this.path)
   }
 
   get pageSourcePath(): string {
-    return join(this.sourcePath, this.path);
+    return join(this.sourcePath, this.path)
   }
 
   get identifier(): string {
@@ -93,36 +93,36 @@ export class NextPage {
       .split(sep)
       .slice(1)
       .map(x => x.replace(/\[(.+?)\]/g, "_$1_"))
-      .join("_");
+      .join("_")
 
-    return `func_${folder}_${this.pageName}`;
+    return `func_${folder}_${this.pageName}`
   }
 
   /**
    * Absolute path to the target folder
    */
   get targetFolder(): string {
-    return join(this.buildOutputPath, this.identifier);
+    return join(this.buildOutputPath, this.identifier)
   }
 
   get targetPath(): string {
-    return join(this.targetFolder, `__${this.pageFileName}`);
+    return join(this.targetFolder, `__${this.pageFileName}`)
   }
 
   get targetPageName(): string {
-    return basename(this.targetPath, extname(this.targetPath));
+    return basename(this.targetPath, extname(this.targetPath))
   }
 
   get targetPageFileName(): string {
     if (this.isStatic) {
-      return `${this.identifier}.html`;
+      return `${this.identifier}.html`
     }
 
-    return basename(this.targetPath);
+    return basename(this.targetPath)
   }
 
   toString(): string {
-    return `${this.pageName} - ${this.isStatic}`;
+    return `${this.pageName} - ${this.isStatic}`
   }
 }
 
@@ -136,32 +136,32 @@ export class NextBuild {
 
   public async init(buildOutputPath: string): Promise<void> {
     // Parse pages
-    const sourcePath = join(this.sourcePath, ".next", "serverless");
+    const sourcePath = join(this.sourcePath, ".next", "serverless")
 
     const files = await glob("pages/**/*.{js,html}", {
       cwd: sourcePath
-    });
+    })
     for (const file of files) {
-      log(`Discovered file ${file}`, LogLevel.Debug);
-      this.pages.push(new NextPage(file, sourcePath, buildOutputPath));
+      log(`Discovered file ${file}`, LogLevel.Debug)
+      this.pages.push(new NextPage(file, sourcePath, buildOutputPath))
     }
   }
 
   public get pages() {
-    return this._pages;
+    return this._pages
   }
 }
 
 function parseParameters(route: string) {
-  const parameters: string[] = [];
-  const r = /\[(.+?)\]/g;
-  let result: RegExpExecArray | null;
+  const parameters: string[] = []
+  const r = /\[(.+?)\]/g
+  let result: RegExpExecArray | null
   do {
-    result = r.exec(route);
+    result = r.exec(route)
     if (result) {
-      parameters.push(result[1]);
+      parameters.push(result[1])
     }
-  } while (result);
+  } while (result)
 
-  return parameters;
+  return parameters
 }

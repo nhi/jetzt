@@ -1,0 +1,18 @@
+{
+  "proxies": {
+    "page_assets": {
+      "matchCondition": {
+        "methods": ["GET"],
+        "route": "_next/{*asset}"
+      },
+      "backendUri": ""
+    },
+    "static_assets": {
+      "matchCondition": {
+        "methods": ["GET"],
+        "route": "static/{*asset}"
+      },
+      "backendUri": ""
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import chalk from "chalk"
 
 export enum LogLevel {
   Error = 0,
@@ -7,27 +7,27 @@ export enum LogLevel {
   Debug = 3
 }
 
-export let currentLogLevel = LogLevel.Default;
+export let currentLogLevel = LogLevel.Default
 
 export function setLogLevel(level: LogLevel) {
-  currentLogLevel = level;
+  currentLogLevel = level
 }
 
 export function log(text: string, level = LogLevel.Default): void {
   if (currentLogLevel >= level) {
-    const message = `[jetzt]\t${text}`;
+    const message = `[jetzt]\t${text}`
     switch (level) {
-      case LogLevel.Verbose: {
-        console.log(chalk.gray(message));
-        break;
-      }
-      case LogLevel.Error: {
-        console.log(chalk.red(message));
-        break;
-      }
-      default: {
-        console.log(message);
-      }
+    case LogLevel.Verbose: {
+      console.log(chalk.gray(message))
+      break
+    }
+    case LogLevel.Error: {
+      console.log(chalk.red(message))
+      break
+    }
+    default: {
+      console.log(message)
+    }
     }
   }
 }

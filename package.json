@@ -1,11 +1,14 @@
 {
-  "name": "jetzt",
-  "version": "0.0.7",
+  "name": "@nhi/jetzt",
+  "version": "0.0.8",
   "description": "Package and publish Next.js 9 serverless applications to Azure Functions",
   "main": "src/index.js",
   "bin": {
     "jetzt": "./lib/index.js"
   },
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "start": "nodemon",
     "create": "npm run build && npm run test",
@@ -14,30 +17,37 @@
     "refresh": "rm -rf ./node_modules ./package-lock.json && npm install"
   },
   "keywords": [],
-  "author": "Christopher Schleiden <cschleiden@live.de>",
+  "author": "Balázs Orbán <balazs@nhi.no>",
+  "contributors": [
+    "Christopher Schleiden <cschleiden@live.de>"
+  ],
   "license": "MIT",
   "peerDependencies": {
     "next": "^9.0.0"
   },
   "engines": {
-    "node": ">=8.5.0"
+    "node": ">=10"
   },
   "devDependencies": {
-    "@types/fs-extra": "^8.0.0",
-    "@types/node": "^12.6.8",
-    "@types/prompts": "^2.0.1",
-    "nodemon": "^1.19.1",
-    "ts-node": "^8.3.0",
-    "typescript": "^3.5.3"
+    "@types/figlet": "^1.2.0",
+    "@types/fs-extra": "^8.1.0",
+    "@types/node": "^13.7.2",
+    "@types/prompts": "^2.0.3",
+    "@typescript-eslint/eslint-plugin": "^2.20.0",
+    "@typescript-eslint/parser": "^2.20.0",
+    "eslint": "^6.8.0",
+    "nodemon": "^2.0.2",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.7.5"
   },
   "dependencies": {
-    "archiver": "^3.0.3",
-    "chalk": "^2.4.2",
-    "commander": "^2.20.0",
-    "figlet": "^1.2.3",
+    "archiver": "^3.1.1",
+    "chalk": "^3.0.0",
+    "commander": "^4.1.1",
+    "figlet": "^1.2.4",
     "fs-extra": "^8.1.0",
     "path": "^0.12.7",
-    "prompts": "^2.1.0",
+    "prompts": "^2.3.1",
     "tiny-glob": "^0.2.6"
   }
 }

@@ -1,4 +1,10 @@
-# jetzt
+# EXPERIMENTAL 💥
+> ## Contirbutions are highly appreciated, as I am not an expert on either Azure Functions nor Next.js!
+
+> This is a fork of [Jetzt](https://github.com/cschleiden/jetzt) and it is highly experimental. Do **not** use it in production
+
+# @nhi/jetzt
+
 
 *jetzt* is a small utility to build, package, and publish [Next.js](https://nextjs.org/) 9 serverless applications to Azure Functions with a single command.
 
