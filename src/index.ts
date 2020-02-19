@@ -7,17 +7,17 @@ import { run } from "./run"
 import { LogLevel, setLogLevel } from "./lib/log"
 import { enableDryRun } from "./lib/exec"
 import { Mode, ModeFlags } from "./mode"
-const version = require("../package.json").version
+const pkg = require("../package.json")
 
 console.log(
-  chalk.green(figlet.textSync("jetzt", { horizontalLayout: "full" }))
+  chalk.green(figlet.textSync(pkg.name, { horizontalLayout: "full" }))
 )
 
 let nextJsFolder: string | undefined
 
 const program = new commander.Command()
 program
-  .version(version)
+  .version(pkg.version)
   .arguments("<nextjsfolder>")
   .action(folder => {
     nextJsFolder = folder

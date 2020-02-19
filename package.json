@@ -1,20 +1,21 @@
 {
   "name": "@nhi/jetzt",
-  "version": "0.0.8",
+  "version": "0.0.10",
   "description": "Package and publish Next.js 9 serverless applications to Azure Functions",
   "main": "src/index.js",
   "bin": {
-    "jetzt": "./lib/index.js"
+    "jetzt": "./dist/index.js"
   },
   "files": [
-    "lib"
+    "dist"
   ],
   "scripts": {
     "start": "nodemon",
     "create": "npm run build && npm run test",
     "build": "tsc -p .",
     "test": "sudo npm i -g && pizza",
-    "refresh": "rm -rf ./node_modules ./package-lock.json && npm install"
+    "refresh": "rm -rf ./node_modules ./package-lock.json && npm install",
+    "prepublish": "yarn build"
   },
   "keywords": [],
   "author": "Balázs Orbán <balazs@nhi.no>",
