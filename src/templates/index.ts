@@ -4,6 +4,7 @@ import { NextPage } from "../next"
 import functionTemplate from "./function.json"
 import hostTemplate from "./host.json"
 import proxiesTemplate from "./proxies.json"
+import handlerTemplate from "./handler"
 
 interface ProxyEntry {
   matchCondition: {
@@ -13,7 +14,7 @@ interface ProxyEntry {
   backendUri: string
 }
 
-interface Proxy {
+interface ProxiesConfig {
   proxies: {
     page_assets: ProxyEntry
     static_assets: ProxyEntry
@@ -21,13 +22,8 @@ interface Proxy {
   }
 }
 
-
-export function handler(pageName: string) {
-  return `const page = require("./${pageName}");
-
-module.exports = async function (context) {
-    await page.render(context.bindings.req, context.res);
-};`
+export function nextToAzureFunction(pageName: string) {
+  return handlerTemplate.replace("pageName", pageName)
 }
 
 export function functionJson(page: NextPage) {
@@ -42,16 +38,20 @@ export function hostJson(): string {
 export function proxiesJson(assetsUrl: string, pages: NextPage[]): string {
 
   // Generate proxies for static pages
-  for (const p of pages.filter(p => p.isStatic && !p.isSpecial)) {
-    (proxiesTemplate as Proxy).proxies[`proxy_${p.identifier}`] = {
+  const staticPages = pages.filter(page => page.isStatic && !page.isSpecial)
+  for (const page of staticPages) {
+    (proxiesTemplate as ProxiesConfig).proxies[`proxy_${page.identifier}`] = {
       matchCondition: {
         methods: ["GET"],
-        route: p.route
+        route: page.route
       },
-      backendUri: resolve(assetsUrl, `_next/pages/${p.targetPageFileName}`)
+      backendUri: resolve(assetsUrl, `_next/pages/${page.targetPageFileName}`)
     }
   }
 
   // Add proxies for static assets
+  proxiesTemplate.proxies.page_assets.backendUri = `${assetsUrl}_next/{asset}`
+  proxiesTemplate.proxies.static_assets.backendUri = `${assetsUrl}static/{asset}`
+
   return JSON.stringify(proxiesTemplate)
 }

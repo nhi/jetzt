@@ -10,7 +10,7 @@ import { log, LogLevel } from "./lib/log"
 import { runStep } from "./lib/step"
 import { NextBuild } from "./next"
 import { parseNextJsConfig } from "./parseNextConfig"
-import { functionJson, handler, hostJson, proxiesJson } from "./templates"
+import { functionJson, nextToAzureFunction, hostJson, proxiesJson } from "./templates"
 
 export async function build(config: JetztConfig) {
   const {
@@ -24,19 +24,26 @@ export async function build(config: JetztConfig) {
     parseNextJsConfig(sourcePath)
   )
 
-  //
-  // Build
-  //
+  // Build (same as `next build`)
   const buildResult = await runStep("Building Next.js project...", () =>
     buildNextProject(sourcePath, buildPagesOutputPath, nextConfig)
   )
 
   // Process build result
-  await runStep("Processing SSR pages...", () => processSSRPages(buildResult))
+  await runStep("Processing SSR pages...", () =>
+    processSSRPages(buildResult)
+  )
+
+
+  // TODO:
+  // await runStep("Processing api routes...", () =>
+  //   processAPIRoutes(buildResult)
+  // )
 
   await runStep("Generating proxy configuration...", () =>
     generateProxies(buildResult, buildPagesOutputPath, config)
   )
+
   await runStep("Generating host configuration...", () =>
     generateHostConfig(buildPagesOutputPath)
   )
@@ -81,7 +88,7 @@ async function processSSRPages(buildResult: NextBuild) {
     )
     await fse.writeFile(
       join(page.targetFolder, "index.js"),
-      handler(page.targetPageFileName),
+      nextToAzureFunction(page.targetPageFileName),
       {
         encoding: "utf-8"
       }
