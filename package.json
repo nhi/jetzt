@@ -1,6 +1,6 @@
 {
   "name": "@nhi/jetzt",
-  "version": "0.0.10",
+  "version": "0.0.12",
   "description": "Package and publish Next.js 9 serverless applications to Azure Functions",
   "main": "src/index.js",
   "bin": {
@@ -18,7 +18,11 @@
     "prepublish": "yarn build"
   },
   "keywords": [],
-  "author": "Balázs Orbán <balazs@nhi.no>",
+  "author": {
+    "name": "Balázs Orbán",
+    "email": "info@balazsorban.com",
+    "url": "https://balazsorban.com"
+  },
   "contributors": [
     "Christopher Schleiden <cschleiden@live.de>"
   ],
