@@ -82,7 +82,7 @@ async function processSSRAndAPI(buildResult: NextBuild) {
     )
     await fse.writeFile(
       join(page.targetFolder, "index.js"),
-      await nextToAzureFunction(page.targetPageFileName),
+      nextToAzureFunction(page.targetPageFileName),
       {
         encoding: "utf-8"
       }

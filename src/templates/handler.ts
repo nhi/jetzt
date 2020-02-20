@@ -1,4 +1,4 @@
-const page = require("./{{PAGE}}")
+export default `const page = require("./{{PAGE}}")
 
 module.exports = async function ({req, res}) {
   if (page.render instanceof Function) {
@@ -8,4 +8,4 @@ module.exports = async function ({req, res}) {
     // Is an API
     await page.default(req, res)
   }
-}
+}`

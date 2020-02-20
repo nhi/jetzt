@@ -1,10 +1,9 @@
 import { resolve } from "url"
 import { NextPage } from "../next"
-import fse from "fs-extra"
 import functionTemplate from "./function.json"
 import hostTemplate from "./host.json"
 import proxiesTemplate from "./proxies.json"
-
+import handlerTemplate from "./handler"
 interface ProxyEntry {
   matchCondition: {
     methods: string[]
@@ -21,9 +20,8 @@ interface ProxiesConfig {
   }
 }
 
-export async function nextToAzureFunction(page: string) {
-  const file = await fse.readFile("./handler.js",{ encoding: "utf-8" })
-  return file.replace("{{PAGE}}", page)
+export function nextToAzureFunction(page: string) {
+  return handlerTemplate.replace("{{PAGE}}", page)
 }
 
 export function functionJson(page: NextPage) {
