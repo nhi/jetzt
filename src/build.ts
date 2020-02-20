@@ -30,15 +30,9 @@ export async function build(config: JetztConfig) {
   )
 
   // Process build result
-  await runStep("Processing SSR pages...", () =>
-    processSSRPages(buildResult)
+  await runStep("Processing SSR pages and API routes...", () =>
+    processSSRAndAPI(buildResult)
   )
-
-
-  // TODO:
-  // await runStep("Processing api routes...", () =>
-  //   processAPIRoutes(buildResult)
-  // )
 
   await runStep("Generating proxy configuration...", () =>
     generateProxies(buildResult, buildPagesOutputPath, config)
@@ -70,7 +64,7 @@ async function buildNextProject(
   return buildOutput
 }
 
-async function processSSRPages(buildResult: NextBuild) {
+async function processSSRAndAPI(buildResult: NextBuild) {
   // Wrap non-static pages in custom handler
   for (const page of buildResult.pages.filter(
     p => !p.isStatic && !p.isSpecial
@@ -88,7 +82,7 @@ async function processSSRPages(buildResult: NextBuild) {
     )
     await fse.writeFile(
       join(page.targetFolder, "index.js"),
-      nextToAzureFunction(page.targetPageFileName),
+      await nextToAzureFunction(page.targetPageFileName),
       {
         encoding: "utf-8"
       }
