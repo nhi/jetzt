@@ -2,7 +2,7 @@
 
 import chalk from "chalk"
 import figlet from "figlet"
-import commander = require("commander");
+import commander from "commander"
 import { run } from "./run"
 import { LogLevel, setLogLevel } from "./lib/log"
 import { enableDryRun } from "./lib/exec"
@@ -24,6 +24,7 @@ program
   })
   .option("-v, --verbose", "Output more information")
   .option("--debug", "Output debug information")
+  .option("--no-zip", "Do not zip the build output")
   .option(
     "-d, --dryrun",
     "Don't actually deploy to Azure, just output cli commands that would run"
@@ -59,7 +60,7 @@ if (!process.argv.slice(2).length || !nextJsFolder) {
       mode.mode |= ModeFlags.Deploy
     }
 
-    await run(nextJsFolder, mode)
+    await run(nextJsFolder, mode, program.zip)
   })().catch(e => {
     if (e.message) {
       // Empty message means we've probably handled it already, don't output anything

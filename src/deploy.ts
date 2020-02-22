@@ -1,4 +1,5 @@
 import { join } from "path"
+import fse from "fs-extra"
 import { JetztConfig } from "./config"
 import { execAsync, fail } from "./lib/exec"
 import { log, LogLevel } from "./lib/log"
@@ -165,11 +166,12 @@ async function upload(config: JetztConfig) {
 
   log("Uploading static assets to blob storage...", LogLevel.Verbose)
   try {
+    const source = join(sourcePath, "static")
+    if (!await fse.pathExists(source)) {
+      return
+    }
     await execAsync(
-      `az storage blob upload-batch --subscription ${subscriptionId} --account-name ${storageAccount} --destination ${assetsContainerName} --destination-path static --source ${join(
-        sourcePath,
-        "static"
-      )}`
+      `az storage blob upload-batch --subscription ${subscriptionId} --account-name ${storageAccount} --destination ${assetsContainerName} --destination-path static --source ${source}`
     )
   } catch (e) {
     fail("Could not upload assets to Azure blob storage", e)

@@ -3,7 +3,8 @@ import { NextPage } from "../next"
 import functionTemplate from "./function.json"
 import hostTemplate from "./host.json"
 import proxiesTemplate from "./proxies.json"
-import handlerTemplate from "./handler"
+import apiHandler from "./apiHandler"
+import pageHandler from "./pageHandler"
 interface ProxyEntry {
   matchCondition: {
     methods: string[]
@@ -20,17 +21,40 @@ interface ProxiesConfig {
   }
 }
 
-export function nextToAzureFunction(page: string) {
-  return handlerTemplate.replace("{{PAGE}}", page)
+export function nextToAzureFunction(page: NextPage) {
+  switch (page.type) {
+  case "api":
+    return apiHandler.replace("{{PAGE}}", page.targetPageFileName)
+  case "ssr":
+  case "special":
+  case "static":
+  default:
+    return pageHandler.replace("{{PAGE}}", page.targetPageFileName)
+  }
 }
 
 export function functionJson(page: NextPage) {
-  functionTemplate.bindings[0].route = page.processedRoute
-  return JSON.stringify(functionTemplate)
+  const template = functionTemplate
+  template.bindings[0].route = page.processedRoute
+  template.bindings[1].name = "res"
+
+  switch (page.type) {
+  case "api":
+    template.bindings[0].methods = ["get", "post"]
+    break
+  case "ssr":
+  case "special":
+  case "static":
+  default:
+    template.bindings[0].methods = ["get"]
+    break
+  }
+
+  return JSON.stringify(functionTemplate, null, 2)
 }
 
 export function hostJson(): string {
-  return JSON.stringify(hostTemplate)
+  return JSON.stringify(hostTemplate, null, 2)
 }
 
 export function proxiesJson(assetsUrl: string, pages: NextPage[]): string {
@@ -51,5 +75,5 @@ export function proxiesJson(assetsUrl: string, pages: NextPage[]): string {
   proxiesTemplate.proxies.page_assets.backendUri = `${assetsUrl}_next/{asset}`
   proxiesTemplate.proxies.static_assets.backendUri = `${assetsUrl}static/{asset}`
 
-  return JSON.stringify(proxiesTemplate)
+  return JSON.stringify(proxiesTemplate, null, 2)
 }

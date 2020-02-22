@@ -2,6 +2,9 @@ import glob = require("tiny-glob");
 import { basename, sep, join, dirname, extname } from "path"
 import { log, LogLevel } from "./lib/log"
 
+
+export type NextPageType = "api" | "ssr" | "static" | "special"
+
 /**
  * Represents a single Next.js page
  *
@@ -38,6 +41,25 @@ export class NextPage {
    */
   get isSpecial(): boolean {
     return this.pageFileName.startsWith("_")
+  }
+
+  get isAPI(): boolean {
+    return this.route.startsWith("api/")
+  }
+
+  get isSSR(): boolean {
+    return !this.isStatic && !this.isSpecial && !this.isAPI
+  }
+
+  get type(): NextPageType {
+    if (this.isAPI) {
+      return "api"
+    } else if(this.isSSR) {
+      return "ssr"
+    } else if(this.isSpecial) {
+      return "special"
+    }
+    else return "static"
   }
 
   get route(): string {

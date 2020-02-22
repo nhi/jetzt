@@ -12,7 +12,7 @@ import { NextBuild } from "./next"
 import { parseNextJsConfig } from "./parseNextConfig"
 import { functionJson, nextToAzureFunction, hostJson, proxiesJson } from "./templates"
 
-export async function build(config: JetztConfig) {
+export async function build(config: JetztConfig, zip: boolean) {
   const {
     sourcePath,
     buildOutputPath,
@@ -30,8 +30,12 @@ export async function build(config: JetztConfig) {
   )
 
   // Process build result
-  await runStep("Processing SSR pages and API routes...", () =>
-    processSSRAndAPI(buildResult)
+  await runStep("Processing SSR pages...", () =>
+    processSSRPages(buildResult)
+  )
+
+  await runStep("Processing API routes...", () =>
+    processAPIRoutes(buildResult)
   )
 
   await runStep("Generating proxy configuration...", () =>
@@ -47,7 +51,7 @@ export async function build(config: JetztConfig) {
   )
 
   await runStep("Building Azure functions package", () =>
-    createPackage(buildPagesOutputPath, buildOutputPath)
+    createPackage(buildPagesOutputPath, buildOutputPath, zip)
   )
 }
 
@@ -64,11 +68,9 @@ async function buildNextProject(
   return buildOutput
 }
 
-async function processSSRAndAPI(buildResult: NextBuild) {
+async function processSSRPages(buildResult: NextBuild) {
   // Wrap non-static pages in custom handler
-  for (const page of buildResult.pages.filter(
-    p => !p.isStatic && !p.isSpecial
-  )) {
+  for (const page of buildResult.pages.filter(page => page.type === "ssr")) {
     log(`Processing ${page.pageName}`, LogLevel.Verbose)
 
     // Copying to new folder
@@ -82,7 +84,40 @@ async function processSSRAndAPI(buildResult: NextBuild) {
     )
     await fse.writeFile(
       join(page.targetFolder, "index.js"),
-      nextToAzureFunction(page.targetPageFileName),
+      nextToAzureFunction(page),
+      {
+        encoding: "utf-8"
+      }
+    )
+
+    // Adding function declaration
+    log("Writing function description...", LogLevel.Verbose)
+    await fse.writeFile(
+      join(page.targetFolder, "function.json"),
+      functionJson(page),
+      {
+        encoding: "utf-8"
+      }
+    )
+  }
+}
+async function processAPIRoutes(buildResult: NextBuild) {
+  // Transform Next.js API routes to Azure Functions
+  for (const page of buildResult.pages.filter(page => page.type === "api")) {
+    log(`Processing ${page.pageName}`, LogLevel.Verbose)
+
+    // Copying to new folder
+    log(`Copying to new file ${page.targetPath}`, LogLevel.Verbose)
+    await fse.copy(page.pageSourcePath, page.targetPath)
+
+    // Wrapping with handler
+    log(
+      `Writing new handler wrapping ${page.targetPageFileName}...`,
+      LogLevel.Verbose
+    )
+    await fse.writeFile(
+      join(page.targetFolder, "index.js"),
+      nextToAzureFunction(page),
       {
         encoding: "utf-8"
       }
@@ -142,7 +177,13 @@ async function copyStaticAssets(
   }
 }
 
-async function createPackage(sourcePath: string, outputPath: string) {
+async function createPackage(sourcePath: string, outputPath: string, zip: boolean) {
+
+  if (!zip) {
+    log("Skipping creating package.zip...", LogLevel.Verbose)
+    return
+  }
+
   const packageFilename = "package.zip"
 
   await new Promise((resolve, reject) => {
